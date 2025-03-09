@@ -4,6 +4,14 @@
 #include <Windows.h>
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 
+#define PIN_MOTOR   8
+#define PIN_A       17
+#define PIN_B       18
+#define PIN_C       12
+#define PIN_D       14
+#define PIN_BTN     13
+#define PIN_RB_SENS 15
+
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 void freeAll(int count, ...);
@@ -77,9 +85,9 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
     double rbSensor = 0;
 
     while (!*vals->sigTerminate) {
-        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 15, 0, 0, 0);
+        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_RB_SENS, 0, 0, 0);
         Go();
-        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 15, &rbSensor);
+        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_RB_SENS, &rbSensor);
 
         if (rbSensor) {
             *vals->rbSensorState = true;
@@ -107,9 +115,9 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
     double btn_pdEIO5 = 0;
 
     while (!*vals->sigTerminate) {
-        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 13, 0, 0, 0);
+        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_BTN, 0, 0, 0);
         Go();
-        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 13, &btn_pdEIO5);
+        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_BTN, &btn_pdEIO5);
 
         if (btn_pdEIO5) {
             *vals->mode = !*vals->mode;
