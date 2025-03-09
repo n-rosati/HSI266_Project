@@ -76,7 +76,8 @@ void freeAll(int count, ...) {
     va_start(args, count);
 
     for (int i = 0; i < count; ++i) {
-        free(va_arg(args, void *));
+        void* ptr = va_arg(args, void *);
+        if (ptr != NULL) free(ptr);
     }
 
     va_end(args);
