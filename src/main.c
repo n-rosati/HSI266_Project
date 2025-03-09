@@ -2,67 +2,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
-
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
-#include "inputs.h"
-#include "outputs.h"
-#include "helper.h"
 
-BOOL WINAPI consoleCtrlHandler(DWORD signal);
-void cleanup();
+DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 void freeAll(int count, ...);
 
-HANDLE thread;
-boolean *rollTrigd;
-boolean *sig_terminate;
+typedef struct SensorHandlerVals {
+    LJ_HANDLE lj_handle;
+    bool *rbSensorState;
+    bool *sig_terminate;
+} SensorHandlerVals;
 
 int main(int argc, char **argv) {
-    SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
-
     LJ_HANDLE lj_handle = 0;
-    double ljSN = 0;
-
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &lj_handle);
     ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
-    eGet(lj_handle, LJ_ioGET_CONFIG, LJ_chSERIAL_NUMBER, &ljSN, 0);
-    printf("Serial number: %.0lf\n", ljSN);
 
-    rollTrigd = calloc(1, sizeof(boolean));
-    sig_terminate = calloc(1, sizeof(boolean));
+    SensorHandlerVals vals;
+    vals.lj_handle = lj_handle;
+    vals.rbSensorState = calloc(1, sizeof(bool));
+    vals.sig_terminate = calloc(1, sizeof(bool));
 
-    DWORD threadID;
-    thread = CreateThread(NULL, 0, handleRollingBallSensor, NULL, 0, &threadID);
+    HANDLE thread = CreateThread(NULL, 0, handleRollingBallSensor, (LPVOID) (&vals), 0, NULL);
 
-    for (int i = 0; i < 20; ++i) {
-        printf("%d\t", *rollTrigd);
-        Sleep(500);
+    for (int i = 0; i < 100; ++i) {
+        printf("%d", *vals.rbSensorState);
+        Sleep(100);
     }
 
-    *sig_terminate = true;
+    *vals.sig_terminate = true;
 
-    cleanup();
-    return 0;
-}
-
-/**
- * Exit gracefully when quitting
- */
-BOOL WINAPI consoleCtrlHandler(DWORD signal) {
-    if (signal == CTRL_C_EVENT) {
-        cleanup();
-    }
-
-    return TRUE;
-}
-
-/**
- * Cleans up the program before quitting
- */
-void cleanup() {
     WaitForSingleObject(thread, INFINITE);
     CloseHandle(thread);
-    freeAll(2, rollTrigd, sig_terminate);
+    freeAll(2, vals.sig_terminate, vals.rbSensorState);
     Close();
+    return 0;
 }
 
 /**
@@ -80,4 +54,31 @@ void freeAll(int count, ...) {
     }
 
     va_end(args);
+}
+
+/**
+ * Sets the rbSensorState when the rolling ball sensor is triggered
+ * @param lpParam Parameter. Should be a SensorHandlerVals struct pointer
+ * @return
+ */
+DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
+    SensorHandlerVals *vals = lpParam;
+
+    double rbSensor = 0;
+
+    while (!*vals->sig_terminate) {
+        AddRequest(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 15, 0, 0, 0);
+        Go();
+        GetResult(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 15, &rbSensor);
+
+        if (rbSensor) {
+            *vals->rbSensorState = true;
+            Sleep(3000);
+            *vals->rbSensorState = false;
+        }
+
+        Sleep(50);
+    }
+
+    return 0;
 }
