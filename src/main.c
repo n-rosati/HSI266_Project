@@ -9,15 +9,15 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 void freeAll(int count, ...);
 
 typedef struct SensorHandlerVals {
-    LJ_HANDLE lj_handle;
+    LJ_HANDLE *ljHandle;
     bool *rbSensorState;
-    bool *sig_terminate;
+    bool *sigTerminate;
 } SensorHandlerVals;
 
 typedef struct ButtonHandlerVals {
-    LJ_HANDLE lj_handle;
+    LJ_HANDLE *ljHandle;
     bool *mode;
-    bool *sig_terminate;
+    bool *sigTerminate;
 } ButtonHandlerVals;
 
 int main(int argc, char **argv) {
@@ -25,32 +25,26 @@ int main(int argc, char **argv) {
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &lj_handle);
     ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
-    HANDLE handles[2];
+    HANDLE threadHandles[2];
+    bool sigTerminateThreads;
 
-    SensorHandlerVals sensVals;
-    sensVals.lj_handle = lj_handle;
-    sensVals.rbSensorState = calloc(1, sizeof(bool));
-    sensVals.sig_terminate = calloc(1, sizeof(bool));
-    handles[0] = CreateThread(NULL, 0, handleRollingBallSensor, (LPVOID) (&sensVals), 0, NULL);
+    SensorHandlerVals sensVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, (LPVOID) (&sensVals), 0, NULL);
 
-    ButtonHandlerVals btnVals;
-    btnVals.lj_handle = lj_handle;
-    btnVals.mode = calloc(1, sizeof(bool));
-    btnVals.sig_terminate = calloc(1, sizeof(bool));
-    handles[1] = CreateThread(NULL, 0, handleModeSwitch, (LPVOID) (&btnVals), 0, NULL);
+    ButtonHandlerVals btnVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, (LPVOID) (&btnVals), 0, NULL);
 
     for (int i = 0; i < 100; ++i) {
         printf("%d", *btnVals.mode);
         Sleep(100);
     }
 
-    *sensVals.sig_terminate = true;
-    *btnVals.sig_terminate = true;
+    sigTerminateThreads = true;
 
-    WaitForMultipleObjects(2, handles, TRUE, INFINITE);
-    CloseHandle(handles[0]);
-    CloseHandle(handles[1]);
-    freeAll(4, sensVals.sig_terminate, sensVals.rbSensorState, btnVals.mode, btnVals.sig_terminate);
+    WaitForMultipleObjects(2, threadHandles, TRUE, INFINITE);
+    CloseHandle(threadHandles[0]);
+    CloseHandle(threadHandles[1]);
+    freeAll(2, sensVals.rbSensorState, btnVals.mode);
     Close();
     return 0;
 }
@@ -82,10 +76,10 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
 
     double rbSensor = 0;
 
-    while (!*vals->sig_terminate) {
-        AddRequest(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 15, 0, 0, 0);
+    while (!*vals->sigTerminate) {
+        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 15, 0, 0, 0);
         Go();
-        GetResult(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 15, &rbSensor);
+        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 15, &rbSensor);
 
         if (rbSensor) {
             *vals->rbSensorState = true;
@@ -112,10 +106,10 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
 
     double btn_pdEIO5 = 0;
 
-    while (!*vals->sig_terminate) {
-        AddRequest(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 13, 0, 0, 0);
+    while (!*vals->sigTerminate) {
+        AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 13, 0, 0, 0);
         Go();
-        GetResult(vals->lj_handle, LJ_ioGET_DIGITAL_BIT, 13, &btn_pdEIO5);
+        GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, 13, &btn_pdEIO5);
 
         if (btn_pdEIO5) {
             *vals->mode = !*vals->mode;
