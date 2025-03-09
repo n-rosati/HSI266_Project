@@ -1,0 +1,8 @@
+EIO0   -> Motor
+7 Segment Display
+    A -> CIO1
+    B -> EIO2
+    C -> EIO4
+    D -> EIO6
+EIO5   -> button input
+EIO7   -> rolling ball sensor

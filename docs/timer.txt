@@ -1,0 +1,10 @@
+TCB: 1MHz
+DIV: 78
+TM : 8bit
+
+
+
+MOTOR:
+    left:   58000
+    middle: 61000
+    right:  64000
