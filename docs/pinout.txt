@@ -2,7 +2,7 @@ Motor
          EIO0 (offset: 8)
 7 Seg
     A -> CIO1 (offset: 17)
-    B -> EIO2 (offset: 18)
+    B -> EIO2 (offset: 10)
     C -> EIO4 (offset: 12)
     D -> EIO6 (offset: 14)
 Button

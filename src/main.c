@@ -5,8 +5,9 @@
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 #include "main.h"
 
+LJ_HANDLE ljHandle = 0;
+
 int main() {
-    LJ_HANDLE ljHandle = 0;
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
@@ -29,10 +30,8 @@ int main() {
     AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
     Go();
 
-    for (int i = 0; i < 500; ++i) {
-        printf("%d", *btnVals.mode);
-        Sleep(100);
-    }
+    // Set the initial display state to blank
+    setDisplayState(15);
 
     // End the program gracefully
     sigTerminateThreads = true;
@@ -127,4 +126,110 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
     }
 
     return 0;
+}
+
+/**
+ * Sets outputs on pins A B C D (defined in main.h) to the associated state number as per the datasheet of the 74LS47
+ * @param state State number to set
+ */
+void setDisplayState(int state) {
+    switch (state) {
+        case 0:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 1:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 2:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 3:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 4:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 5:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 6:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 7:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 0, 0, 0);
+            break;
+        case 8:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 9:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 10:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 11:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 12:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 13:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        case 14:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+        default:
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_B, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_C, 1, 0, 0);
+            AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_D, 1, 0, 0);
+            break;
+    }
+    Go();
 }

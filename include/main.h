@@ -3,7 +3,7 @@
 
 #define PIN_SERVO   8
 #define PIN_A       17
-#define PIN_B       18
+#define PIN_B       10
 #define PIN_C       12
 #define PIN_D       14
 #define PIN_BTN     13
@@ -26,5 +26,6 @@ typedef struct ButtonHandlerVals {
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 void freeAll(int count, ...);
+void setDisplayState(int state);
 
 #endif //CONSTANTS_H
