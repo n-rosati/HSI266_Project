@@ -3,14 +3,7 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
-
-#define PIN_MOTOR   8
-#define PIN_A       17
-#define PIN_B       18
-#define PIN_C       12
-#define PIN_D       14
-#define PIN_BTN     13
-#define PIN_RB_SENS 15
+#include "constants.h"
 
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
@@ -34,15 +27,24 @@ int main(int argc, char **argv) {
     ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
     HANDLE threadHandles[2];
-    bool sigTerminateThreads;
+    bool sigTerminateThreads = false;
 
     SensorHandlerVals sensVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
-    threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, (LPVOID) (&sensVals), 0, NULL);
+    threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensVals, 0, NULL);
 
     ButtonHandlerVals btnVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
-    threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, (LPVOID) (&btnVals), 0, NULL);
+    threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnVals, 0, NULL);
 
-    for (int i = 0; i < 100; ++i) {
+    // PWM timer setup
+    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
+    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, PIN_SERVO, 0, 0);
+    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
+    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 78, 0, 0);
+    AddRequest(lj_handle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmPWM8, 0, 0);
+    AddRequest(lj_handle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
+    Go();
+
+    for (int i = 0; i < 500; ++i) {
         printf("%d", *btnVals.mode);
         Sleep(100);
     }
@@ -98,7 +100,7 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
             *vals->rbSensorState = false;
         }
 
-        Sleep(50);
+        Sleep(THREAD_SLEEP_MS);
     }
 
     return 0;
@@ -113,20 +115,30 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
     ButtonHandlerVals *vals = lpParam;
 
     double btn_pdEIO5 = 0;
+    double btnPrevState = 0;
 
     while (!*vals->sigTerminate) {
         AddRequest(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_BTN, 0, 0, 0);
         Go();
         GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_BTN, &btn_pdEIO5);
 
-        if (btn_pdEIO5) {
+        if (btn_pdEIO5 == 1 && ((int) btn_pdEIO5 ^ (int) btnPrevState)) {
             *vals->mode = !*vals->mode;
 
-            // 500ms timeout on mode switching to prevent bouncing and let the servo finish a previous move
-            Sleep(500);
-        }
+            if (*vals->mode) {
+                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
+                Go();
+            } else {
+                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 62300, 0, 0);
+                Go();
+            }
 
-        Sleep(50);
+            // 500ms timeout on mode switching to prevent bouncing and let the servo finish a previous move
+            Sleep(750);
+        }
+        btnPrevState = btn_pdEIO5;
+
+        Sleep(THREAD_SLEEP_MS);
     }
 
     return 0;
