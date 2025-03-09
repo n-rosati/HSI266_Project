@@ -5,28 +5,28 @@
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 #include "main.h"
 
-int main(int argc, char **argv) {
-    LJ_HANDLE lj_handle = 0;
-    OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &lj_handle);
-    ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
+int main() {
+    LJ_HANDLE ljHandle = 0;
+    OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
+    ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
     // Spawn threads to handle input (button and tilt sensor)
     HANDLE threadHandles[2];
     bool sigTerminateThreads = false;
 
-    SensorHandlerVals sensVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    SensorHandlerVals sensVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensVals, 0, NULL);
 
-    ButtonHandlerVals btnVals = { &lj_handle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    ButtonHandlerVals btnVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnVals, 0, NULL);
 
     // PWM timer setup
-    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
-    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, PIN_SERVO, 0, 0);
-    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
-    AddRequest(lj_handle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 78, 0, 0);
-    AddRequest(lj_handle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmPWM8, 0, 0);
-    AddRequest(lj_handle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, PIN_SERVO, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 78, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmPWM8, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
     Go();
 
     for (int i = 0; i < 500; ++i) {
@@ -36,7 +36,6 @@ int main(int argc, char **argv) {
 
     // End the program gracefully
     sigTerminateThreads = true;
-
     WaitForMultipleObjects(2, threadHandles, TRUE, INFINITE);
     CloseHandle(threadHandles[0]);
     CloseHandle(threadHandles[1]);
