@@ -10,6 +10,7 @@
 
 BOOL WINAPI consoleCtrlHandler(DWORD signal);
 void cleanup();
+void freeAll(int count, ...);
 
 HANDLE thread;
 boolean *rollTrigd;
@@ -44,6 +45,9 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+/**
+ * Exit gracefully when quitting
+ */
 BOOL WINAPI consoleCtrlHandler(DWORD signal) {
     if (signal == CTRL_C_EVENT) {
         cleanup();
