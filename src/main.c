@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &lj_handle);
     ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
+    // Spawn threads to handle input (button and tilt sensor)
     HANDLE threadHandles[2];
     bool sigTerminateThreads = false;
 
@@ -49,6 +50,7 @@ int main(int argc, char **argv) {
         Sleep(100);
     }
 
+    // End the program gracefully
     sigTerminateThreads = true;
 
     WaitForMultipleObjects(2, threadHandles, TRUE, INFINITE);
@@ -125,13 +127,13 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
         if (btn_pdEIO5 == 1 && ((int) btn_pdEIO5 ^ (int) btnPrevState)) {
             *vals->mode = !*vals->mode;
 
+            // Move the motor to point at the new mode
             if (*vals->mode) {
-                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
-                Go();
-            } else {
                 AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 62300, 0, 0);
-                Go();
+            } else {
+                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
             }
+            Go();
 
             // 500ms timeout on mode switching to prevent bouncing and let the servo finish a previous move
             Sleep(750);
