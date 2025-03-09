@@ -5,10 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 add_executable(Project src/main.c
-        src/inputs.c
-        include/inputs.h
-        src/outputs.c
-        include/outputs.h
 )
 
 include_directories("include")
