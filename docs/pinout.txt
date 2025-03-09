@@ -1,8 +1,11 @@
-EIO0   -> Motor
-7 Segment Display
-    A -> CIO1
-    B -> EIO2
-    C -> EIO4
-    D -> EIO6
-EIO5   -> button input
-EIO7   -> rolling ball sensor
+Motor
+         EIO0 (offset: 8)
+7 Seg
+    A -> CIO1 (offset: 17)
+    B -> EIO2 (offset: 18)
+    C -> EIO4 (offset: 12)
+    D -> EIO6 (offset: 14)
+Button
+         EIO5 (offset: 13)
+RB Sens
+         EIO7 (offset: 15)

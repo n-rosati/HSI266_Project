@@ -1,0 +1,41 @@
+IDEA:
+	Dice Roller
+		- 'shake' the board to roll
+			- rolling ball sensor (input 1)
+		- do little animation, after a short random delay show the number on 7seg display (output 1)
+			- animation is running through states 10 -> 12 -> 11 from the 7 seg driver datasheet
+		- one toggle button to switch between rolling a D6 and a D9 (input 2)
+			- servo motor with a little arrow on the end to 'point' to which mode is active (output2)
+
+	- uses the 7 seg driver IC from DGS because DO channels cant sink enough current to directly drive the LEDs
+	- button as DI
+
+	MOTOR:
+		 GND    +5V  PWM
+		BROWN   RED YELLOW
+
+	TIMER:
+		TCB: 1MHz
+		DIV: 78
+		TM : 8bit
+
+	LabJack:
+		0-7   - FIO0-FIO7
+		8-15  - EIO0-EIO7
+		16-19 - CIO0-CIO3
+
+		Digital input: [2-5]V
+
+	RB SENSOR:
+		Max: 5V 1mA
+		Min: 1V 10mA
+		~2.5k ohm resistor to get 4V output (as per voltage divider)
+
+	WEBSITE:
+		- icons for each possible state
+			- face of a die for each value
+			- faces of a coin
+		- row entry layout:
+			[TIMESTAMP?] [ICON] - [MODE] [VALUE]
+		- if i have time
+			- add a statistic for how many times each value was rolled
