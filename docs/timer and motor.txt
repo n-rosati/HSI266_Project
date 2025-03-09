@@ -7,4 +7,4 @@ TM : 8bit
 MOTOR:
     left:   58000 (59500)
     middle: 61000
-    right:  64000 (62500)
+    right:  64000 (62100)
