@@ -114,7 +114,7 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
         if (btn_pdEIO5) {
             *vals->mode = !*vals->mode;
 
-            // 500ms timeout on mode switching to prevent bouncing
+            // 500ms timeout on mode switching to prevent bouncing and let the servo finish a previous move
             Sleep(500);
         }
 
