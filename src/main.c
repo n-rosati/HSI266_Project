@@ -3,23 +3,7 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
-#include "constants.h"
-
-DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
-DWORD WINAPI handleModeSwitch(LPVOID lpParam);
-void freeAll(int count, ...);
-
-typedef struct SensorHandlerVals {
-    LJ_HANDLE *ljHandle;
-    bool *rbSensorState;
-    bool *sigTerminate;
-} SensorHandlerVals;
-
-typedef struct ButtonHandlerVals {
-    LJ_HANDLE *ljHandle;
-    bool *mode;
-    bool *sigTerminate;
-} ButtonHandlerVals;
+#include "main.h"
 
 int main(int argc, char **argv) {
     LJ_HANDLE lj_handle = 0;
