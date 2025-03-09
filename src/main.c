@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
 
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &lj_handle);
     ePut(lj_handle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
-
     eGet(lj_handle, LJ_ioGET_CONFIG, LJ_chSERIAL_NUMBER, &ljSN, 0);
     printf("Serial number: %.0lf\n", ljSN);
 
