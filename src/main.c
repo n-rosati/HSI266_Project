@@ -31,7 +31,7 @@ int main() {
     Go();
 
     // Set the initial display state to blank
-    setDisplayState(15);
+    animate(10);
 
     // End the program gracefully
     sigTerminateThreads = true;
@@ -232,4 +232,20 @@ void setDisplayState(int state) {
             break;
     }
     Go();
+}
+
+/**
+ * Plays an animation a number of times on the display
+ * @param numLoops Number of times to loop the animation
+ */
+void animate(int numLoops) {
+    for (int i = 0; i < numLoops; ++i) {
+        setDisplayState(11);
+        Sleep(200);
+        setDisplayState(10);
+        Sleep(200);
+    }
+
+    // Blank the display when done
+    setDisplayState(15);
 }

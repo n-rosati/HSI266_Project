@@ -27,5 +27,6 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 void freeAll(int count, ...);
 void setDisplayState(int state);
+void animate(int numLoops);
 
 #endif //CONSTANTS_H
