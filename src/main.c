@@ -32,6 +32,9 @@ int main() {
 
     // Set the initial display state to blank
     animate(10);
+    setDisplayState(5);
+    Sleep(15000);
+    setDisplayState(15);
 
     // End the program gracefully
     sigTerminateThreads = true;
