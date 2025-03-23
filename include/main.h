@@ -11,17 +11,17 @@
 
 #define THREAD_SLEEP_MS 50
 
-typedef struct SensorHandlerVals {
+typedef struct TiltSensorHandlerVals {
     LJ_HANDLE *ljHandle;
     bool *rbSensorState;
     bool *sigTerminate;
-} SensorHandlerVals;
+} TiltSensorHandlerVals;
 
-typedef struct ButtonHandlerVals {
+typedef struct ModeSwitchButtonHandlerVals {
     LJ_HANDLE *ljHandle;
     bool *mode;
     bool *sigTerminate;
-} ButtonHandlerVals;
+} ModeSwitchButtonHandlerVals;
 
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);

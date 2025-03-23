@@ -11,14 +11,12 @@ int main() {
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
-    // Spawn threads to handle input (button and tilt sensor)
+    // Spawn threads for input handling (button and tilt sensor)
     HANDLE threadHandles[2];
     bool sigTerminateThreads = false;
-
-    SensorHandlerVals sensVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    TiltSensorHandlerVals sensVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensVals, 0, NULL);
-
-    ButtonHandlerVals btnVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    ModeSwitchButtonHandlerVals btnVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnVals, 0, NULL);
 
     // PWM timer setup
@@ -38,7 +36,7 @@ int main() {
 
     // End the program gracefully
     sigTerminateThreads = true;
-    WaitForMultipleObjects(2, threadHandles, TRUE, INFINITE);
+    WaitForMultipleObjects(ARRAYSIZE(threadHandles), threadHandles, TRUE, INFINITE);
     CloseHandle(threadHandles[0]);
     CloseHandle(threadHandles[1]);
     freeAll(2, sensVals.rbSensorState, btnVals.mode);
@@ -69,7 +67,7 @@ void freeAll(int count, ...) {
  * @return
  */
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
-    SensorHandlerVals *vals = lpParam;
+    TiltSensorHandlerVals *vals = lpParam;
 
     double rbSensor = 0;
 
@@ -99,7 +97,7 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam) {
  * @return
  */
 DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
-    ButtonHandlerVals *vals = lpParam;
+    ModeSwitchButtonHandlerVals *vals = lpParam;
 
     double btn_pdEIO5 = 0;
     double btnPrevState = 0;
