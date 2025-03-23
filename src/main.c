@@ -29,11 +29,10 @@ int main() {
     Go();
 
     // Set the initial display state to blank
-    animate(10);
-    setDisplayState(5);
-    Sleep(15000);
     setDisplayState(15);
 
+    
+    
     // End the program gracefully
     sigTerminateThreads = true;
     WaitForMultipleObjects(ARRAYSIZE(threadHandles), threadHandles, TRUE, INFINITE);
@@ -118,7 +117,7 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
             }
             Go();
 
-            // 500ms timeout on mode switching to prevent bouncing and let the servo finish a previous move
+            // Timeout on mode switching to ignore bouncing and let the servo finish prior move
             Sleep(750);
         }
         btnPrevState = btn_pdEIO5;
