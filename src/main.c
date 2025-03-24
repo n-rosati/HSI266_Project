@@ -258,3 +258,9 @@ void animate(LJ_HANDLE ljHandle, int numLoops) {
     // Blank the display when done
     setDisplayState(ljHandle, 15);
 }
+
+bool doesUserWantToExit() {
+    char input[5];
+    scanf_s("%s", input, _countof(input));
+    return strcmp(input, "exit") == 0 ? true : false;
+}
