@@ -5,9 +5,8 @@
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 #include "main.h"
 
-LJ_HANDLE ljHandle = 0;
-
 int main() {
+    LJ_HANDLE ljHandle = 0;
     OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
@@ -29,9 +28,11 @@ int main() {
     Go();
 
     // Set the initial display state to blank
-    setDisplayState(15);
+    setDisplayState(ljHandle, 15);
 
-    
+    // Main program logic loop
+    doesUserWantToExit();
+    //programLoop();
     
     // End the program gracefully
     sigTerminateThreads = true;
@@ -41,6 +42,12 @@ int main() {
     freeAll(2, sensVals.rbSensorState, btnVals.mode);
     Close();
     return 0;
+}
+
+void programLoop() {
+    while (!doesUserWantToExit()) {
+
+    }
 }
 
 /**
@@ -130,9 +137,10 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
 
 /**
  * Sets outputs on pins A B C D (defined in main.h) to the associated state number as per the datasheet of the 74LS47
+ * @param ljHandle
  * @param state State number to set
  */
-void setDisplayState(int state) {
+void setDisplayState(LJ_HANDLE ljHandle, int state) {
     switch (state) {
         case 0:
             AddRequest(ljHandle, LJ_ioPUT_DIGITAL_BIT, PIN_A, 0, 0, 0);
@@ -236,16 +244,17 @@ void setDisplayState(int state) {
 
 /**
  * Plays an animation a number of times on the display
+ * @param ljHandle
  * @param numLoops Number of times to loop the animation
  */
-void animate(int numLoops) {
+void animate(LJ_HANDLE ljHandle, int numLoops) {
     for (int i = 0; i < numLoops; ++i) {
-        setDisplayState(11);
+        setDisplayState(ljHandle, 11);
         Sleep(200);
-        setDisplayState(10);
+        setDisplayState(ljHandle, 10);
         Sleep(200);
     }
 
     // Blank the display when done
-    setDisplayState(15);
+    setDisplayState(ljHandle, 15);
 }

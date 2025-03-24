@@ -25,8 +25,10 @@ typedef struct ModeSwitchButtonHandlerVals {
 
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
+void programLoop();
 void freeAll(int count, ...);
-void setDisplayState(int state);
-void animate(int numLoops);
+void setDisplayState(LJ_HANDLE ljHandle, int state);
+void animate(LJ_HANDLE ljHandle, int numLoops);
+bool doesUserWantToExit();
 
 #endif //CONSTANTS_H
