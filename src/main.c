@@ -11,12 +11,14 @@ int main() {
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
     // Spawn threads for input handling (button and tilt sensor)
-    HANDLE threadHandles[2];
+    HANDLE threadHandles[3];
     bool sigTerminateThreads = false;
-    TiltSensorHandlerVals sensVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
-    threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensVals, 0, NULL);
-    ModeSwitchButtonHandlerVals btnVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
-    threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnVals, 0, NULL);
+    TiltSensorHandlerVals sensHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensHandlerVals, 0, NULL);
+    ModeSwitchButtonHandlerVals btnHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnHandlerVals, 0, NULL);
+    ConsoleInputHandlerVals consoleInputHandlerVals = { &sigTerminateThreads };
+    threadHandles[2] = CreateThread(NULL, 0, handleConsoleInput, &consoleInputHandlerVals, 0, NULL);
 
     // PWM timer setup
     AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
@@ -31,15 +33,15 @@ int main() {
     setDisplayState(ljHandle, 15);
 
     // Main program logic loop
-    doesUserWantToExit();
-    //programLoop();
-    
+    programLoop();
+
     // End the program gracefully
     sigTerminateThreads = true;
     WaitForMultipleObjects(ARRAYSIZE(threadHandles), threadHandles, TRUE, INFINITE);
     CloseHandle(threadHandles[0]);
     CloseHandle(threadHandles[1]);
-    freeAll(2, sensVals.rbSensorState, btnVals.mode);
+    CloseHandle(threadHandles[2]);
+    freeAll(2, sensHandlerVals.rbSensorState, btnHandlerVals.mode);
     Close();
     return 0;
 }
@@ -130,6 +132,26 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
         btnPrevState = btn_pdEIO5;
 
         Sleep(THREAD_SLEEP_MS);
+    }
+
+    return 0;
+}
+
+/**
+ * Monitors the terminal for user input
+ * @param lpParam Parameter. Should be a ConsoleInputHandler struct pointer
+ * @return
+ */
+DWORD WINAPI handleConsoleInput(LPVOID lpParam) {
+    ConsoleInputHandlerVals *vals = lpParam;
+
+    char input[5];
+    while (!*vals->sigTerminate) {
+        printf("Enter 'exit' to end the program\n");
+        scanf_s("%s", input, _countof(input));
+        if (strcmp(input, "exit") == 0) {
+            *vals->sigTerminate = true;
+        }
     }
 
     return 0;

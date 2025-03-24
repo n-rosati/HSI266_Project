@@ -23,8 +23,13 @@ typedef struct ModeSwitchButtonHandlerVals {
     bool *sigTerminate;
 } ModeSwitchButtonHandlerVals;
 
+typedef struct ConsoleInputHandlerVals {
+    bool *sigTerminate;
+} ConsoleInputHandlerVals;
+
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
+DWORD WINAPI handleConsoleInput(LPVOID lpParam);
 void programLoop();
 void freeAll(int count, ...);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
