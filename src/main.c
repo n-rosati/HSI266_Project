@@ -107,6 +107,12 @@ void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, c
     }
 }
 
+/**
+ * Writes the current date, time, rolling mode, and value to a file
+ * @param fp File pointer to write to
+ * @param mode Current rolling mode. Should be DIE_MODE or COIN_MODE
+ * @param value Value rolled
+ */
 void writeValueToFile(const FILE* fp, const bool mode, const int value) {
     time_t curTime;
     time(&curTime);
