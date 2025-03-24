@@ -9,7 +9,11 @@
 #define PIN_BTN     13
 #define PIN_RB_SENS 15
 
+#define DIE_MODE false
+#define COIN_MODE true
+
 #define THREAD_SLEEP_MS 50
+#define DISPLAY_VALUE_SLEEP_MS 5000
 
 typedef struct TiltSensorHandlerVals {
     LJ_HANDLE *ljHandle;
@@ -30,7 +34,7 @@ typedef struct ConsoleInputHandlerVals {
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 DWORD WINAPI handleConsoleInput(LPVOID lpParam);
-void programLoop();
+void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool *mode, const bool *isTilted);
 void freeAll(int count, ...);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);

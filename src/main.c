@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
+#include <time.h>
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 #include "main.h"
 
@@ -33,9 +34,11 @@ int main() {
     setDisplayState(ljHandle, 15);
 
     // Main program logic loop
-    programLoop();
+    srand(time(NULL));
+    programLoop(ljHandle, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
 
     // End the program gracefully
+    setDisplayState(ljHandle, 15);
     sigTerminateThreads = true;
     WaitForMultipleObjects(ARRAYSIZE(threadHandles), threadHandles, TRUE, INFINITE);
     CloseHandle(threadHandles[0]);
@@ -46,9 +49,29 @@ int main() {
     return 0;
 }
 
-void programLoop() {
-    while (!doesUserWantToExit()) {
+void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool *mode, const bool *isTilted) {
+    bool wasTilted = false;
+    int value = 15;
 
+    while (!*sigTerminate) {
+        if (*isTilted == true && *isTilted ^ wasTilted) {
+            if (*mode == DIE_MODE) {
+                value = rand() % 6 + 1;
+                animate(ljHandle, rand() % 6 + 5);
+                setDisplayState(ljHandle, value);
+                Sleep(DISPLAY_VALUE_SLEEP_MS);
+            } else if (*mode == COIN_MODE) {
+                value = rand() % 2 + 1;
+                animate(ljHandle, rand() % 6 + 5);
+                setDisplayState(ljHandle, value);
+                Sleep(DISPLAY_VALUE_SLEEP_MS);
+            }
+
+            setDisplayState(ljHandle, 15);
+        }
+
+        wasTilted = *isTilted;
+        Sleep(50);
     }
 }
 
