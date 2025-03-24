@@ -8,10 +8,22 @@
 
 int main() {
     LJ_HANDLE ljHandle = 0;
-    OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
+    LJ_ERROR ljErr = 0;
+    ljErr = OpenLabJack(LJ_dtU3, LJ_ctUSB, "1", 1, &ljHandle);
+
+    if (ljErr == LJE_DEVICE_ALREADY_OPEN) {
+        printf("LabJack in use! Exiting\n");
+        return 0;
+    }
+
+    if (ljHandle == 0) {
+        printf("Invalid LabJack handle received. Exiting\n");
+        return 0;
+    }
+
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
-    // Spawn threads for input handling (button and tilt sensor)
+    // Spawn threads for input handling (button, tilt sensor, console)
     HANDLE threadHandles[3];
     bool sigTerminateThreads = false;
     TiltSensorHandlerVals sensHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
@@ -27,7 +39,7 @@ int main() {
     AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
     AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 78, 0, 0);
     AddRequest(ljHandle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmPWM8, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, SERVO_LEFT_POS_VALUE, 0, 0);
     Go();
 
     // Set the initial display state to blank
@@ -38,12 +50,17 @@ int main() {
     programLoop(ljHandle, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
 
     // End the program gracefully
-    setDisplayState(ljHandle, 15);
     sigTerminateThreads = true;
+
+    setDisplayState(ljHandle, 15);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, SERVO_MIDDLE_POS_VALUE, 0, 0);
+    Go();
+
     WaitForMultipleObjects(ARRAYSIZE(threadHandles), threadHandles, TRUE, INFINITE);
     CloseHandle(threadHandles[0]);
     CloseHandle(threadHandles[1]);
     CloseHandle(threadHandles[2]);
+
     freeAll(2, sensHandlerVals.rbSensorState, btnHandlerVals.mode);
     Close();
     return 0;
@@ -51,7 +68,7 @@ int main() {
 
 void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool *mode, const bool *isTilted) {
     bool wasTilted = false;
-    int value = 15;
+    int value;
 
     while (!*sigTerminate) {
         if (*isTilted == true && *isTilted ^ wasTilted) {
@@ -143,9 +160,9 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
 
             // Move the motor to point at the new mode
             if (*vals->mode) {
-                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 62300, 0, 0);
+                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, SERVO_RIGHT_POS_VALUE, 0, 0);
             } else {
-                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 59500, 0, 0);
+                AddRequest(*vals->ljHandle, LJ_ioPUT_TIMER_VALUE, 0, SERVO_LEFT_POS_VALUE, 0, 0);
             }
             Go();
 
