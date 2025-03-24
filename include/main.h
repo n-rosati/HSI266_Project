@@ -49,5 +49,6 @@ void freeAll(int count, ...);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);
 bool doesUserWantToExit();
+bool outputFileExists();
 
 #endif //CONSTANTS_H

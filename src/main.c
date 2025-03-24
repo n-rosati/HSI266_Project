@@ -25,6 +25,18 @@ int main() {
 
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
 
+    // Check if the output file exists and ask the user what they want to do
+    char mode[2] = { 'w' , '\0'};
+    if (outputFileExists()) {
+        printf("Output file already exists. Enter 1 to append or 2 to overwrite: ");
+
+        char input[2];
+        scanf_s("%s", input, _countof(input));
+            if (strcmp(input, "1") == 0) {
+                mode[0] = 'a';
+            }
+    }
+
     // Spawn threads for input handling (button, tilt sensor, console)
     HANDLE threadHandles[3];
     bool sigTerminateThreads = false;
@@ -48,8 +60,8 @@ int main() {
     setDisplayState(ljHandle, 15);
 
     // Main program logic loop
-    FILE* fp = _fsopen(OUTPUT_FILE_NAME, "w", _SH_DENYWR);
-    fprintf_s(fp, "year,month,day,hour,minute,second,mode,value\n");
+    FILE* fp = _fsopen(OUTPUT_FILE_NAME, mode, _SH_DENYWR);
+    if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value\n");
     srand(time(NULL));
     programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
     fclose(fp);
@@ -345,4 +357,12 @@ bool doesUserWantToExit() {
     char input[5];
     scanf_s("%s", input, _countof(input));
     return strcmp(input, "exit") == 0 ? true : false;
+}
+
+bool outputFileExists() {
+    FILE* fp;
+    const errno_t err = fopen_s(&fp, OUTPUT_FILE_NAME, "r");
+
+    if (err) return false;
+    return true;
 }
