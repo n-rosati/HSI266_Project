@@ -6,6 +6,8 @@
 #include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
 #include "main.h"
 
+#include <corecrt_share.h>
+
 int main() {
     LJ_HANDLE ljHandle = 0;
     LJ_ERROR ljErr = 0;
@@ -46,8 +48,11 @@ int main() {
     setDisplayState(ljHandle, 15);
 
     // Main program logic loop
+    FILE* fp = _fsopen(OUTPUT_FILE_NAME, "w", _SH_DENYWR);
+    fprintf_s(fp, "year,month,day,hour,minute,second,mode,value\n");
     srand(time(NULL));
-    programLoop(ljHandle, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
+    programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
+    fclose(fp);
 
     // End the program gracefully
     sigTerminateThreads = true;
@@ -66,7 +71,7 @@ int main() {
     return 0;
 }
 
-void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool *mode, const bool *isTilted) {
+void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted) {
     bool wasTilted = false;
     int value;
 
@@ -80,6 +85,7 @@ void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool 
 
             animate(ljHandle, rand() % (ANIMATE_MAX - ANIMATE_MIN + 1) + ANIMATE_MIN);
             setDisplayState(ljHandle, value);
+            writeValueToFile(fp, *mode, value);
             Sleep(DISPLAY_VALUE_SLEEP_MS);
             setDisplayState(ljHandle, 15);
         }
@@ -87,6 +93,23 @@ void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool 
         wasTilted = *isTilted;
         Sleep(50);
     }
+}
+
+void writeValueToFile(const FILE* fp, const bool mode, const int value) {
+    time_t curTime;
+    time(&curTime);
+    struct tm localtime;
+    localtime_s(&localtime, &curTime);
+
+    fprintf_s(fp, "%d,%d,%d,%d,%d,%d,%s,%d\n", localtime.tm_year + 1900,
+                                                     localtime.tm_mon + 1,
+                                                     localtime.tm_mday,
+                                                     localtime.tm_hour,
+                                                     localtime.tm_min,
+                                                     localtime.tm_sec,
+                                                     mode == DIE_MODE ? "die" : "coin",
+                                                     value);
+    fflush(fp);
 }
 
 /**
