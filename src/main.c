@@ -74,16 +74,13 @@ void programLoop(const LJ_HANDLE ljHandle, const bool *sigTerminate, const bool 
         if (*isTilted == true && *isTilted ^ wasTilted) {
             if (*mode == DIE_MODE) {
                 value = rand() % 6 + 1;
-                animate(ljHandle, rand() % 6 + 5);
-                setDisplayState(ljHandle, value);
-                Sleep(DISPLAY_VALUE_SLEEP_MS);
             } else if (*mode == COIN_MODE) {
                 value = rand() % 2 + 1;
-                animate(ljHandle, rand() % 6 + 5);
-                setDisplayState(ljHandle, value);
-                Sleep(DISPLAY_VALUE_SLEEP_MS);
             }
 
+            animate(ljHandle, rand() % (ANIMATE_MAX - ANIMATE_MIN + 1) + ANIMATE_MIN);
+            setDisplayState(ljHandle, value);
+            Sleep(DISPLAY_VALUE_SLEEP_MS);
             setDisplayState(ljHandle, 15);
         }
 
