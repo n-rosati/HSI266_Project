@@ -1,5 +1,5 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #define PIN_SERVO   8
 #define PIN_A       17
@@ -51,4 +51,4 @@ void animate(LJ_HANDLE ljHandle, int numLoops);
 bool doesUserWantToExit();
 bool outputFileExists();
 
-#endif //CONSTANTS_H
+#endif //MAIN_H
