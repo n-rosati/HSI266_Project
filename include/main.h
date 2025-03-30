@@ -34,6 +34,7 @@ typedef struct TiltSensorHandlerVals {
 typedef struct ModeSwitchButtonHandlerVals {
     LJ_HANDLE *ljHandle;
     bool *mode;
+    bool *canChangeMode;
     bool *sigTerminate;
 } ModeSwitchButtonHandlerVals;
 
@@ -49,8 +50,8 @@ DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 DWORD WINAPI handleConsoleInput(LPVOID lpParam);
 DWORD WINAPI handleFileUpload(LPVOID lpParam);
-void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted);
-void writeValueToFile(FILE *fp, bool mode, const int value);
+void programLoop(LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted, bool *canChangeMode);
+void writeValueToFile(FILE *fp, bool mode, int value);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);
 bool doesUserWantToExit();

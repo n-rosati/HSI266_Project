@@ -48,7 +48,7 @@ int main() {
     bool sigTerminateThreads = false;
     TiltSensorHandlerVals sensHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensHandlerVals, 0, NULL);
-    ModeSwitchButtonHandlerVals btnHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
+    ModeSwitchButtonHandlerVals btnHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnHandlerVals, 0, NULL);
     ConsoleInputHandlerVals consoleInputHandlerVals = { &sigTerminateThreads };
     threadHandles[2] = CreateThread(NULL, 0, handleConsoleInput, &consoleInputHandlerVals, 0, NULL);
@@ -74,11 +74,9 @@ int main() {
         fflush(stdout);
         return 2;
     }
-
     if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value");
 
-    srand(time(NULL));
-    programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
+    programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState, btnHandlerVals.canChangeMode);
     fclose(fp);
 
     // End the program gracefully
@@ -96,27 +94,34 @@ int main() {
 
     free(sensHandlerVals.rbSensorState);
     free(btnHandlerVals.mode);
+    free(btnHandlerVals.canChangeMode);
     Close();
     return 0;
 }
 
-void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted) {
+void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted, bool *canChangeMode) {
     bool wasTilted = false;
+    bool capturedMode;
     int value;
+    srand(time(NULL));
 
     while (!*sigTerminate) {
         if (*isTilted == true && *isTilted ^ wasTilted) {
+            *canChangeMode = false; //lock out the mode change until the display is clear again
             if (*mode == DIE_MODE) {
+                capturedMode = DIE_MODE;
                 value = rand() % 6 + 1;
-            } else if (*mode == COIN_MODE) {
+            } else {
+                capturedMode = COIN_MODE;
                 value = rand() % 2 + 1;
             }
 
             animate(ljHandle, rand() % (ANIMATE_MAX - ANIMATE_MIN + 1) + ANIMATE_MIN);
             setDisplayState(ljHandle, value);
-            writeValueToFile(fp, *mode, value);
+            writeValueToFile(fp, capturedMode, value);
             Sleep(DISPLAY_VALUE_SLEEP_MS);
             setDisplayState(ljHandle, 15);
+            *canChangeMode = true;
         }
 
         wasTilted = *isTilted;
@@ -194,7 +199,7 @@ DWORD WINAPI handleModeSwitch(LPVOID lpParam) {
         Go();
         GetResult(*vals->ljHandle, LJ_ioGET_DIGITAL_BIT, PIN_BTN, &btn_pdEIO5);
 
-        if (btn_pdEIO5 == 1 && ((int) btn_pdEIO5 ^ (int) btnPrevState)) {
+        if (*vals->canChangeMode && btn_pdEIO5 == 1 && ((int) btn_pdEIO5 ^ (int) btnPrevState)) {
             *vals->mode = !*vals->mode;
 
             // Move the motor to point at the new mode
