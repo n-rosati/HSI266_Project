@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include <time.h>
-#include "C:/Program Files (x86)/LabJack/Drivers/LabJackUD.h"
+#include "LabJackUD.h"
 #include "main.h"
 
 #include <corecrt_share.h>
