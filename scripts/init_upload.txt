@@ -1,4 +1,4 @@
 open sftp://"%USERNAME%":"%PASSWORD%"@matrix.senecapolytechnic.ca -hostkey="ssh-ed49503 256 34:d3:ac:d0:2f:d6:a2:5b:de:aa:fa:d2:3c:b2:31:cc"
-put -nopreservetime -nopermissions web\\index.html /home/"%USERNAME%"/public_html/hsi_project/index.html
-put -nopreservetime -nopermissions web\\index.js /home/"%USERNAME%"/public_html/hsi_project/index.js
+put -nopreservetime -nopermissions web\\index.html /home/"%USERNAME%"/public_html/hsi266_project/index.html
+put -nopreservetime -nopermissions web\\index.js /home/"%USERNAME%"/public_html/hsi266_project/index.js
 exit
