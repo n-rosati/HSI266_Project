@@ -37,8 +37,11 @@ int main() {
             }
     }
 
-    // Spawn threads for input handling (button, tilt sensor, console)
-    HANDLE threadHandles[3];
+    // Initial upload of HTML and JS files
+    system("winscp.com /script=\"scripts\\init_upload.txt\"");
+
+    // Spawn threads for input and output handling (button, tilt sensor, console input, file uploading)
+    HANDLE threadHandles[4];
     bool sigTerminateThreads = false;
     TiltSensorHandlerVals sensHandlerVals = { &ljHandle, calloc(1, sizeof(bool)), &sigTerminateThreads };
     threadHandles[0] = CreateThread(NULL, 0, handleRollingBallSensor, &sensHandlerVals, 0, NULL);
@@ -46,6 +49,8 @@ int main() {
     threadHandles[1] = CreateThread(NULL, 0, handleModeSwitch, &btnHandlerVals, 0, NULL);
     ConsoleInputHandlerVals consoleInputHandlerVals = { &sigTerminateThreads };
     threadHandles[2] = CreateThread(NULL, 0, handleConsoleInput, &consoleInputHandlerVals, 0, NULL);
+    FileUploadHandlerVals fileUploadHandlerVals = { &sigTerminateThreads };
+    threadHandles[3] = CreateThread(NULL, 0, handleFileUpload, &fileUploadHandlerVals, 0, NULL);
 
     // PWM timer setup
     AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
@@ -77,6 +82,7 @@ int main() {
     CloseHandle(threadHandles[0]);
     CloseHandle(threadHandles[1]);
     CloseHandle(threadHandles[2]);
+    CloseHandle(threadHandles[3]);
 
     freeAll(2, sensHandlerVals.rbSensorState, btnHandlerVals.mode);
     Close();
@@ -113,7 +119,7 @@ void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, c
  * @param mode Current rolling mode. Should be DIE_MODE or COIN_MODE
  * @param value Value rolled
  */
-void writeValueToFile(const FILE* fp, const bool mode, const int value) {
+void writeValueToFile(FILE *fp, const bool mode, const int value) {
     time_t curTime;
     time(&curTime);
     struct tm localtime;
@@ -230,6 +236,20 @@ DWORD WINAPI handleConsoleInput(LPVOID lpParam) {
         if (strcmp(input, "exit") == 0) {
             *vals->sigTerminate = true;
         }
+    }
+
+    return 0;
+}
+
+DWORD WINAPI handleFileUpload(LPVOID lpParam) {
+    FileUploadHandlerVals *vals = lpParam;
+
+    // Initial delay to let the program start up first before attempting first upload
+    Sleep(THREAD_SLEEP_MS);
+
+    while (!*vals->sigTerminate) {
+        system("winscp.com /script=\"scripts\\data_upload.txt\"");
+        Sleep(FILE_UPLOAD_INTERVAL_MS);
     }
 
     return 0;

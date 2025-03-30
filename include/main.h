@@ -21,8 +21,9 @@
 
 #define THREAD_SLEEP_MS 50
 #define DISPLAY_VALUE_SLEEP_MS 5000
+#define FILE_UPLOAD_INTERVAL_MS 10000
 
-#define OUTPUT_FILE_NAME "output.txt"
+#define OUTPUT_FILE_NAME "data.csv"
 
 typedef struct TiltSensorHandlerVals {
     LJ_HANDLE *ljHandle;
@@ -40,11 +41,16 @@ typedef struct ConsoleInputHandlerVals {
     bool *sigTerminate;
 } ConsoleInputHandlerVals;
 
+typedef struct FileUploadHandlerVals {
+    bool *sigTerminate;
+} FileUploadHandlerVals;
+
 DWORD WINAPI handleRollingBallSensor(LPVOID lpParam);
 DWORD WINAPI handleModeSwitch(LPVOID lpParam);
 DWORD WINAPI handleConsoleInput(LPVOID lpParam);
+DWORD WINAPI handleFileUpload(LPVOID lpParam);
 void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted);
-void writeValueToFile(const FILE* fp, bool mode, const int value);
+void writeValueToFile(FILE *fp, bool mode, const int value);
 void freeAll(int count, ...);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);
