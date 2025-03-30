@@ -66,7 +66,7 @@ int main() {
 
     // Main program logic loop
     FILE* fp = _fsopen(OUTPUT_FILE_NAME, mode, _SH_DENYWR);
-    if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value\n");
+    if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value");
     srand(time(NULL));
     programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
     fclose(fp);
@@ -84,7 +84,8 @@ int main() {
     CloseHandle(threadHandles[2]);
     CloseHandle(threadHandles[3]);
 
-    freeAll(2, sensHandlerVals.rbSensorState, btnHandlerVals.mode);
+    free(sensHandlerVals.rbSensorState);
+    free(btnHandlerVals.mode);
     Close();
     return 0;
 }
@@ -126,7 +127,7 @@ void writeValueToFile(FILE *fp, const bool mode, const int value) {
     localtime_s(&localtime, &curTime);
 
     // YYYY,MM,dd,HH,mm,ss,mode,value
-    fprintf_s(fp, "%d,%d,%d,%d,%d,%d,%s,%d\n", localtime.tm_year + 1900,
+    fprintf_s(fp, "\n%d,%d,%d,%d,%d,%d,%s,%d", localtime.tm_year + 1900,
                                                      localtime.tm_mon + 1,
                                                      localtime.tm_mday,
                                                      localtime.tm_hour,
@@ -135,23 +136,6 @@ void writeValueToFile(FILE *fp, const bool mode, const int value) {
                                                      mode == DIE_MODE ? "die" : "coin",
                                                      value);
     fflush(fp);
-}
-
-/**
- * Frees the given list of pointers
- * @param count Number of items being passed
- * @param ... Pointers to things to be free'd
- */
-void freeAll(int count, ...) {
-    va_list args;
-    va_start(args, count);
-
-    for (int i = 0; i < count; ++i) {
-        void* ptr = va_arg(args, void *);
-        if (ptr != NULL) free(ptr);
-    }
-
-    va_end(args);
 }
 
 /**

@@ -51,7 +51,6 @@ DWORD WINAPI handleConsoleInput(LPVOID lpParam);
 DWORD WINAPI handleFileUpload(LPVOID lpParam);
 void programLoop(const LJ_HANDLE ljHandle, FILE* fp, const bool *sigTerminate, const bool *mode, const bool *isTilted);
 void writeValueToFile(FILE *fp, bool mode, const int value);
-void freeAll(int count, ...);
 void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);
 bool doesUserWantToExit();
