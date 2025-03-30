@@ -1,7 +1,5 @@
 getNewData()
-// setInterval(getNewData, 5000)
-
-setTimeout(sortTable, 100, 2)
+setInterval(getNewData, 5000)
 
 function getNewData() {
     const xhttp = new XMLHttpRequest();

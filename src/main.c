@@ -15,12 +15,14 @@ int main() {
 
     if (ljErr == LJE_DEVICE_ALREADY_OPEN) {
         printf("LabJack in use! Exiting\n");
-        return 0;
+        fflush(stdout);
+        return 1;
     }
 
     if (ljHandle == 0) {
         printf("Invalid LabJack handle received. Exiting\n");
-        return 0;
+        fflush(stdout);
+        return 1;
     }
 
     ePut(ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
@@ -29,6 +31,7 @@ int main() {
     char mode[2] = { 'w' , '\0'};
     if (outputFileExists()) {
         printf("Output file already exists. Enter 1 to append or 2 to overwrite: ");
+        fflush(stdout);
 
         char input[2];
         scanf_s("%s", input, _countof(input));
@@ -38,7 +41,7 @@ int main() {
     }
 
     // Initial upload of HTML and JS files
-    system("winscp.com /script=\"scripts\\init_upload.txt\"");
+    system("cmd.exe /C winscp.com /script=\"scripts\\init_upload.txt\" >NUL 2>&1");
 
     // Spawn threads for input and output handling (button, tilt sensor, console input, file uploading)
     HANDLE threadHandles[4];
@@ -66,7 +69,14 @@ int main() {
 
     // Main program logic loop
     FILE* fp = _fsopen(OUTPUT_FILE_NAME, mode, _SH_DENYWR);
+    if (fp == NULL) {
+        printf("Could not open output file `%s`. Exiting.\n", OUTPUT_FILE_NAME);
+        fflush(stdout);
+        return 2;
+    }
+
     if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value");
+
     srand(time(NULL));
     programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState);
     fclose(fp);
@@ -217,6 +227,7 @@ DWORD WINAPI handleConsoleInput(LPVOID lpParam) {
     char input[5];
     while (!*vals->sigTerminate) {
         printf("Enter 'exit' to end the program\n");
+        fflush(stdout);
         scanf_s("%s", input, _countof(input));
         if (strcmp(input, "exit") == 0) {
             *vals->sigTerminate = true;
@@ -232,7 +243,9 @@ DWORD WINAPI handleFileUpload(LPVOID lpParam) {
 
     while (!*vals->sigTerminate) {
         Sleep(THREAD_SLEEP_MS);
-        if (counter % ((FILE_UPLOAD_INTERVAL_SECONDS * 1000) / THREAD_SLEEP_MS) == 0) system("winscp.com /script=\"scripts\\data_upload.txt\"");
+        if (counter % ((FILE_UPLOAD_INTERVAL_SECONDS * 1000) / THREAD_SLEEP_MS) == 0) {
+            system("cmd.exe /C winscp.com /script=\"scripts\\data_upload.txt\" >NUL 2>&1");
+        }
         counter++;
     }
 
@@ -374,5 +387,7 @@ bool outputFileExists() {
     const errno_t err = fopen_s(&fp, OUTPUT_FILE_NAME, "r");
 
     if (err) return false;
+
+    fclose(fp);
     return true;
 }
