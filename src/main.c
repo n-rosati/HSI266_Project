@@ -125,6 +125,7 @@ void writeValueToFile(FILE *fp, const bool mode, const int value) {
     struct tm localtime;
     localtime_s(&localtime, &curTime);
 
+    // YYYY,MM,dd,HH,mm,ss,mode,value
     fprintf_s(fp, "%d,%d,%d,%d,%d,%d,%s,%d\n", localtime.tm_year + 1900,
                                                      localtime.tm_mon + 1,
                                                      localtime.tm_mday,
@@ -243,13 +244,12 @@ DWORD WINAPI handleConsoleInput(LPVOID lpParam) {
 
 DWORD WINAPI handleFileUpload(LPVOID lpParam) {
     FileUploadHandlerVals *vals = lpParam;
-
-    // Initial delay to let the program start up first before attempting first upload
-    Sleep(THREAD_SLEEP_MS);
+    int counter = 0;
 
     while (!*vals->sigTerminate) {
-        system("winscp.com /script=\"scripts\\data_upload.txt\"");
-        Sleep(FILE_UPLOAD_INTERVAL_MS);
+        Sleep(THREAD_SLEEP_MS);
+        if (counter % ((FILE_UPLOAD_INTERVAL_SECONDS * 1000) / THREAD_SLEEP_MS) == 0) system("winscp.com /script=\"scripts\\data_upload.txt\"");
+        counter++;
     }
 
     return 0;

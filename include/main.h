@@ -9,19 +9,19 @@
 #define PIN_BTN     13
 #define PIN_RB_SENS 15
 
-#define SERVO_LEFT_POS_VALUE 59500
-#define SERVO_MIDDLE_POS_VALUE 60900
-#define SERVO_RIGHT_POS_VALUE 62300
+#define SERVO_LEFT_POS_VALUE    59500
+#define SERVO_MIDDLE_POS_VALUE  60900
+#define SERVO_RIGHT_POS_VALUE   62300
 
-#define DIE_MODE false
-#define COIN_MODE true
+#define DIE_MODE    false
+#define COIN_MODE   true
 
 #define ANIMATE_MIN 5
 #define ANIMATE_MAX 10
 
-#define THREAD_SLEEP_MS 50
-#define DISPLAY_VALUE_SLEEP_MS 5000
-#define FILE_UPLOAD_INTERVAL_MS 10000
+#define THREAD_SLEEP_MS                 50
+#define DISPLAY_VALUE_SLEEP_MS          5000
+#define FILE_UPLOAD_INTERVAL_SECONDS    15
 
 #define OUTPUT_FILE_NAME "data.csv"
 
