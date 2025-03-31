@@ -9,9 +9,9 @@
 #define PIN_BTN     13
 #define PIN_RB_SENS 15
 
-#define SERVO_LEFT_POS_VALUE    59500
-#define SERVO_MIDDLE_POS_VALUE  60900
-#define SERVO_RIGHT_POS_VALUE   62300
+#define SERVO_LEFT_POS_VALUE    60500
+#define SERVO_MIDDLE_POS_VALUE  58000
+#define SERVO_RIGHT_POS_VALUE   61750
 
 #define DIE_MODE    false
 #define COIN_MODE   true
