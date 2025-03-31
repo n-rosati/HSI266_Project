@@ -56,18 +56,12 @@ int main() {
     threadHandles[3] = CreateThread(NULL, 0, handleFileUpload, &fileUploadHandlerVals, 0, NULL);
 
     // PWM timer setup
-    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, PIN_SERVO, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 78, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmPWM8, 0, 0);
-    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, SERVO_LEFT_POS_VALUE, 0, 0);
-    Go();
+    setupPWM(ljHandle, PIN_SERVO, LJ_tmPWM8, LJ_tc1MHZ_DIV, 78, SERVO_LEFT_POS_VALUE);
 
     // Set the initial display state to blank
     setDisplayState(ljHandle, 15);
 
-    // Main program logic loop
+    // Try to open the output file
     FILE* fp = _fsopen(OUTPUT_FILE_NAME, mode, _SH_DENYWR);
     if (fp == NULL) {
         printf("Could not open output file `%s`. Exiting.\n", OUTPUT_FILE_NAME);
@@ -76,10 +70,10 @@ int main() {
     }
     if (mode[0] == 'w') fprintf_s(fp, "year,month,day,hour,minute,second,mode,value");
 
+    // Main program loop
     programLoop(ljHandle, fp, &sigTerminateThreads, btnHandlerVals.mode, sensHandlerVals.rbSensorState, btnHandlerVals.canChangeMode);
-    fclose(fp);
 
-    // End the program gracefully
+    // End the program and threads gracefully
     sigTerminateThreads = true;
 
     setDisplayState(ljHandle, 15);
@@ -95,6 +89,7 @@ int main() {
     free(sensHandlerVals.rbSensorState);
     free(btnHandlerVals.mode);
     free(btnHandlerVals.canChangeMode);
+    fclose(fp);
     Close();
     return 0;
 }
@@ -395,4 +390,15 @@ bool outputFileExists() {
 
     fclose(fp);
     return true;
+}
+
+void setupPWM(long ljHandle, long pinOffset, long timerMode, long timerClockBase, long timerClockDiv, int initialValue) {
+    // PWM timer setup
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 1, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, pinOffset, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, timerClockBase, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, timerClockDiv, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_MODE, 0, timerMode, 0, 0);
+    AddRequest(ljHandle, LJ_ioPUT_TIMER_VALUE, 0, initialValue, 0, 0);
+    Go();
 }

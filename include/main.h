@@ -56,5 +56,6 @@ void setDisplayState(LJ_HANDLE ljHandle, int state);
 void animate(LJ_HANDLE ljHandle, int numLoops);
 bool doesUserWantToExit();
 bool outputFileExists();
+void setupPWM(long ljHandle, long pinOffset, long timerMode, long timerClockBase, long timerClockDiv, int initialValue);
 
 #endif //MAIN_H
