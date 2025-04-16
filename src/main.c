@@ -1,3 +1,14 @@
+/* Name: Nicholas Rosati
+ * Date: 2025-04-15
+ * Purpose: When the program starts, initial files are uploaded to the Matrix server. If an output data file exists,
+ *          The user will be asked if they want to overwrite it or append to it. Once the main program loop is running,
+ *          The program will wait for a signal on the tilt sensor. When it is detected, the program will do an animation
+ *          and then generate a random number between either 1 and 6 or 1 and 2 (both inclusive) depending on the mode
+ *          the device is currently in. To toggle between modes, a button is pressed. While the program is running, the
+ *          current data.csv file will be uploaded to the server. When a user enters the term `exit` into the console, the
+ *          program will end. All inputs and outputs are connected through the DB15 connector on the bottom of the LabJack.
+ */
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
